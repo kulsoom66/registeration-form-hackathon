@@ -1,0 +1,1122 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS to hide steps and the success message */
+        .step-content, #success-message {
+            display: none;
+            transition: all 0.5s ease-in-out;
+        }
+        /* Active step styling */
+        .step-content.active {
+            display: block;
+        }
+        /* Custom class for invalid input fields */
+        .input-error {
+            border-color: #ef4444; /* red-500 */
+        }
+        /* RTL support for Arabic */
+        [dir="rtl"] body {
+            text-align: right;
+            direction: rtl;
+        }
+        [dir="rtl"] .ml-3 {
+            margin-left: 0;
+            margin-right: 0.75rem;
+        }
+        [dir="rtl"] .mr-2 {
+            margin-right: 0;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-gray-50 min-h-screen flex items-center justify-center p-8">
+
+    <div id="form-container" class="max-w-3xl w-full mx-auto bg-white p-8 rounded-2xl shadow-xl transition-all duration-300">
+        <div class="flex justify-end mb-4">
+            <select id="language-switcher" class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2 border">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+            </select>
+        </div>
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 leading-tight" data-translate-key="mainTitle">Generative AI Hackathon Registration</h1>
+            <p class="mt-2 text-lg text-gray-600" data-translate-key="mainSubtitle">Please fill out the form below to register your team.</p>
+        </header>
+
+        <div id="progress-indicator-container" class="relative pt-1 mb-8 transition-opacity duration-300">
+            <div class="flex mb-2 items-center justify-between">
+                <div>
+                    <span id="step-info" class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                        Step 1 of 3
+                    </span>
+                </div>
+                <div class="text-right">
+                    <span id="step-title" class="text-sm font-semibold inline-block text-indigo-600">
+                        Project & Team Info
+                    </span>
+                </div>
+            </div>
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-200">
+                <div id="progress-bar" style="width: 33.33%;" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500 transition-all duration-500 rounded-full"></div>
+            </div>
+        </div>
+
+        <form id="registration-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div id="step-1" class="step-content active min-h-[300px]">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4" data-translate-key="step1Title">Step 1: Project & Team Information</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label for="teamName" class="block text-sm font-medium text-gray-700" data-translate-key="teamNameLabel">Team Name</label>
+                        <input
+                            type="text"
+                            name="teamName"
+                            id="teamName"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="e.g., The Code Breakers"
+                        />
+                        <p id="error-teamName" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="contestTheme" class="block text-sm font-medium text-gray-700" data-translate-key="contestThemeLabel">Contest Theme</label>
+                        <select
+                            name="contestTheme"
+                            id="contestTheme"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                        >
+                            <option value="" data-translate-key="selectThemeOption">Select a theme</option>
+                            <option value="cyber_security" data-translate-key="themeCyberSecurity">Cyber Security</option>
+                            <option value="customer_service" data-translate-key="themeCustomerService">Customer Service</option>
+                            <option value="education_and_learning" data-translate-key="themeEducation">Education and Learning</option>
+                            <option value="others" data-translate-key="themeOthers">Others</option>
+                        </select>
+                        <p id="error-contestTheme" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="ideaSummary" class="block text-sm font-medium text-gray-700" data-translate-key="ideaSummaryLabel">Idea Summary</label>
+                        <textarea
+                            name="ideaSummary"
+                            id="ideaSummary"
+                            rows="3"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="Provide a brief summary of your project idea."
+                        ></textarea>
+                        <p id="error-ideaSummary" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" data-translate-key="proposalTemplateLabel">Project Proposal Template</label>
+                        <a href="{% static 'docs/template.docx' %}" class="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 underline" download>Download Proposal Template (.docx)</a>
+                    </div>
+                    <div>
+                        <label for="proposalPdf" class="block text-sm font-medium text-gray-700" data-translate-key="proposalPdfLabel">Project Proposal (PDF File)</label>
+                        <input
+                            type="file"
+                            name="proposalPdf"
+                            id="proposalPdf"
+                            accept=".pdf"
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        />
+                        <p id="error-proposalPdf" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-2" class="step-content min-h-[300px]">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4" data-translate-key="step2Title">Step 2: Team Leader Details</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label for="leaderName" class="block text-sm font-medium text-gray-700" data-translate-key="leaderNameLabel">Team Leader Name</label>
+                        <input
+                            type="text"
+                            name="leaderName"
+                            id="leaderName"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="FirstName SecondName LastName"
+                        />
+                        <p id="error-leaderName" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="leaderEmail" class="block text-sm font-medium text-gray-700" data-translate-key="leaderEmailLabel">Email Address</label>
+                        <input
+                            type="email"
+                            name="leaderEmail"
+                            id="leaderEmail"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="name@example.com"
+                        />
+                        <p id="error-leaderEmail" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="leaderPhone" class="block text-sm font-medium text-gray-700" data-translate-key="leaderPhoneLabel">Phone Number</label>
+                        <input
+                            type="tel"
+                            name="leaderPhone"
+                            id="leaderPhone"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="+968 99991111"
+                        />
+                        <p id="error-leaderPhone" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="leaderStatus" class="block text-sm font-medium text-gray-700" data-translate-key="statusLabel">Status</label>
+                        <select
+                            name="leaderStatus"
+                            id="leaderStatus"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                        >
+                            <option value="" data-translate-key="selectStatusOption">Select Status</option>
+                            <option value="university_student" data-translate-key="statusUniversity">University/College student</option>
+                            <option value="job_seeker" data-translate-key="statusJobSeeker">Job Seeker</option>
+                            <option value="ministry_of_defense_employee" data-translate-key="statusMod">Ministry of Defense Employee</option>
+                            <option value="others" data-translate-key="statusOthers">Others</option>
+                        </select>
+                        <p id="error-leaderStatus" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label for="leaderAcademicBackground" class="block text-sm font-medium text-gray-700" data-translate-key="academicBackgroundLabel">Academic Background</label>
+                        <input
+                            type="text"
+                            name="leaderAcademicBackground"
+                            id="leaderAcademicBackground"
+                            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border"
+                            placeholder="e.g., Computer Science"
+                        />
+                        <p id="error-leaderAcademicBackground" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" data-translate-key="skillsLabel">Skills</label>
+                        <div id="leader-skills-checkboxes" class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+                            </div>
+                        <p id="error-leaderSkills" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            <input
+                                id="leaderMediaConsent"
+                                name="leaderMediaConsent"
+                                type="checkbox"
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="leaderMediaConsent" class="font-medium text-gray-700" data-translate-key="mediaConsentLabel">I have no objection to media coverage during the contest phases.</label>
+                        </div>
+                        <p id="error-leaderMediaConsent" class="text-sm text-red-500 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step-3" class="step-content min-h-[300px]">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4" data-translate-key="step3Title">Step 3: Team Members</h2>
+                <p class="text-gray-600 mb-4" data-translate-key="teamSizeInfo">A team must have exactly 4 members in total, including the leader.</p>
+                <div id="leader-info-display" class="p-4 bg-indigo-50 rounded-lg mb-6 shadow-sm">
+                    <p class="font-semibold text-indigo-800" data-translate-key="leaderDisplayTitle">Team Leader (Member #1)</p>
+                    <p id="leader-display-text" class="text-sm text-indigo-700"></p>
+                </div>
+                <div id="members-list" class="space-y-6">
+                    </div>
+                <p id="error-membersInfo" class="text-sm text-red-500 mt-1"></p>
+            </div>
+
+            <div id="step-4" class="step-content min-h-[300px]">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4" data-translate-key="summaryTitle">Final Submission</h2>
+                <p class="text-gray-600 mb-4" data-translate-key="summarySubtitle">Please review your information before submitting.</p>
+                <div class="space-y-6" id="summary-content">
+                    </div>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-gray-200 flex justify-between items-center">
+                <button type="button" id="prev-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors" style="display: none;">
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span data-translate-key="prevBtn">Previous</span>
+                </button>
+                <button type="button" id="next-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <span data-translate-key="nextBtn">Next</span>
+                    <svg class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+                <button type="submit" id="submit-btn" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors" style="display: none;">
+                    <span data-translate-key="submitBtn">Submit Registration</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="success-message" class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-xl w-full">
+            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="mt-4 text-3xl font-extrabold text-gray-900" data-translate-key="successTitle">Registration Successful!</h2>
+            <p class="mt-2 text-gray-600" data-translate-key="successText">Your team has been successfully registered for the hackathon. We look forward to seeing your amazing project!</p>
+            <div class="mt-6 flex justify-center">
+                <button id="register-another-btn" class="px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span data-translate-key="registerAnotherBtn">Register another team</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const formContainer = document.getElementById('form-container');
+            const registrationForm = document.getElementById('registration-form');
+            const successMessage = document.getElementById('success-message');
+            const stepContents = document.querySelectorAll('.step-content');
+            const progressBar = document.getElementById('progress-bar');
+            const stepInfo = document.getElementById('step-info');
+            const stepTitle = document.getElementById('step-title');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const membersList = document.getElementById('members-list');
+            const registerAnotherBtn = document.getElementById('register-another-btn');
+            const progressIndicatorContainer = document.getElementById('progress-indicator-container');
+            const leaderSkillsCheckboxesContainer = document.getElementById('leader-skills-checkboxes');
+            const leaderMediaConsentCheckbox = document.getElementById('leaderMediaConsent');
+            const languageSwitcher = document.getElementById('language-switcher');
+            const downloadTemplateLink = document.querySelector('a');
+
+            // --- Translation Object ---
+            const translations = {
+                en: {
+                    mainTitle: "Generative AI Hackathon Registration",
+                    mainSubtitle: "Please fill out the form below to register your team.",
+                    step1Title: "Step 1: Project & Team Information",
+                    step2Title: "Step 2: Team Leader Details",
+                    step3Title: "Step 3: Team Members",
+                    summaryTitle: "Final Submission",
+                    summarySubtitle: "Please review your information before submitting.",
+                    teamNameLabel: "Team Name",
+                    teamNamePlaceholder: "e.g., The Code Breakers",
+                    contestThemeLabel: "Contest Theme",
+                    selectThemeOption: "Select a theme",
+                    themeCyberSecurity: "Cyber Security",
+                    themeCustomerService: "Customer Service",
+                    themeEducation: "Education and Learning",
+                    themeOthers: "Others",
+                    ideaSummaryLabel: "Idea Summary",
+                    ideaSummaryPlaceholder: "Provide a brief summary of your project idea.",
+                    proposalTemplateLabel: "Project Proposal Template",
+                    proposalTemplateLink: "Download Proposal Template (.docx)",
+                    proposalPdfLabel: "Project Proposal (PDF File)",
+                    leaderNameLabel: "Team Leader Name",
+                    leaderNamePlaceholder: "FirstName SecondName LastName",
+                    leaderEmailLabel: "Email Address",
+                    leaderEmailPlaceholder: "name@example.com",
+                    leaderPhoneLabel: "Phone Number",
+                    leaderPhonePlaceholder: "+968 99991111",
+                    statusLabel: "Status",
+                    selectStatusOption: "Select Status",
+                    statusUniversity: "University/College student",
+                    statusJobSeeker: "Job Seeker",
+                    statusMod: "Ministry of Defense Employee",
+                    statusOthers: "Others",
+                    academicBackgroundLabel: "Academic Background",
+                    academicBackgroundPlaceholder: "e.g., Computer Science",
+                    skillsLabel: "Skills",
+                    mediaConsentLabel: "I have no objection to media coverage during the contest phases.",
+                    teamSizeInfo: "A team must have exactly 4 members in total, including the leader.",
+                    leaderDisplayTitle: "Team Leader (Member #1)",
+                    prevBtn: "Previous",
+                    nextBtn: "Next",
+                    submitBtn: "Submit Registration",
+                    successTitle: "Registration Successful!",
+                    successText: "Your team has been successfully registered for the hackathon. We look forward to seeing your amazing project!",
+                    registerAnotherBtn: "Register another team",
+                    member: {
+                        nameLabel: "Name",
+                        emailLabel: "Email",
+                        statusLabel: "Status",
+                        academicBackgroundLabel: "Academic Background",
+                        skillsLabel: "Skills",
+                        mediaConsentLabel: "I have no objection to media coverage during the contest phases.",
+                        namePlaceholder: (index) => `Member #${index + 2} Name`,
+                        academicBackgroundPlaceholder: (index) => `e.g., Computer Science`,
+                    },
+                    errors: {
+                        teamName: "Team name is required.",
+                        contestTheme: "A contest theme must be selected.",
+                        ideaSummary: "Idea summary is required.",
+                        proposalPdf: "A project proposal PDF file is required.",
+                        leaderName: "Leader name is required.",
+                        leaderEmail: "Email is required.",
+                        invalidEmail: "Please enter a valid email address.",
+                        leaderPhone: "Phone number is required.",
+                        leaderStatus: "Status is required.",
+                        leaderAcademicBackground: "Academic Background is required.",
+                        leaderSkills: "At least one skill is required.",
+                        leaderMediaConsent: "You must agree to media coverage.",
+                        teamSize: (total) => `A team must have exactly 4 members. Current members: ${total}.`,
+                        memberName: (index) => `Member #${index + 2} name is required.`,
+                        memberEmail: (index) => `Member #${index + 2} email is required.`,
+                        memberInvalidEmail: (index) => `Please enter a valid email address for member #${index + 2}.`,
+                        memberStatus: (index) => `Member #${index + 2} status is required.`,
+                        memberAcademicBackground: (index) => `Member #${index + 2} academic background is required.`,
+                        memberSkills: (index) => `At least one skill is required for member #${index + 2}.`,
+                        memberMediaConsent: (index) => `Member #${index + 2} must agree to media coverage.`,
+                    }
+                },
+                ar: {
+                    mainTitle: "تسجيل هاكاثون الذكاء الاصطناعي التوليدي",
+                    mainSubtitle: "يرجى ملء النموذج أدناه لتسجيل فريقك.",
+                    step1Title: "الخطوة 1: معلومات المشروع والفريق",
+                    step2Title: "الخطوة 2: تفاصيل قائد الفريق",
+                    step3Title: "الخطوة 3: أعضاء الفريق",
+                    summaryTitle: "التقديم النهائي",
+                    summarySubtitle: "يرجى مراجعة معلوماتك قبل التقديم.",
+                    teamNameLabel: "اسم الفريق",
+                    teamNamePlaceholder: "على سبيل المثال، كاسرو الشفرات",
+                    contestThemeLabel: "موضوع المسابقة",
+                    selectThemeOption: "اختر موضوعًا",
+                    themeCyberSecurity: "الأمن السيبراني",
+                    themeCustomerService: "خدمة العملاء",
+                    themeEducation: "التعليم والتعلم",
+                    themeOthers: "أخرى",
+                    ideaSummaryLabel: "ملخص الفكرة",
+                    ideaSummaryPlaceholder: "قدم ملخصًا موجزًا لفكرة مشروعك.",
+                    proposalTemplateLabel: "نموذج مقترح المشروع",
+                    proposalTemplateLink: "تنزيل نموذج المقترح (docx.)",
+                    proposalPdfLabel: "مقترح المشروع (ملف PDF)",
+                    leaderNameLabel: "اسم قائد الفريق",
+                    leaderNamePlaceholder: "الاسم الأول الاسم الثاني اسم العائلة",
+                    leaderEmailLabel: "عنوان البريد الإلكتروني",
+                    leaderEmailPlaceholder: "الاسم@مثال.كوم",
+                    leaderPhoneLabel: "رقم الهاتف",
+                    leaderPhonePlaceholder: "99991111 968+",
+                    statusLabel: "الحالة",
+                    selectStatusOption: "اختر الحالة",
+                    statusUniversity: "طالب جامعي/كلية",
+                    statusJobSeeker: "باحث عن عمل",
+                    statusMod: "موظف بوزارة الدفاع",
+                    statusOthers: "أخرى",
+                    academicBackgroundLabel: "الخلفية الأكاديمية",
+                    academicBackgroundPlaceholder: "على سبيل المثال، علوم الحاسوب",
+                    skillsLabel: "المهارات",
+                    mediaConsentLabel: "ليس لدي أي اعتراض على التغطية الإعلامية خلال مراحل المسابقة.",
+                    teamSizeInfo: "يجب أن يتكون الفريق من 4 أعضاء بالضبط، بما في ذلك القائد.",
+                    leaderDisplayTitle: "قائد الفريق (العضو #1)",
+                    prevBtn: "السابق",
+                    nextBtn: "التالي",
+                    submitBtn: "إرسال التسجيل",
+                    successTitle: "تم التسجيل بنجاح!",
+                    successText: "تم تسجيل فريقك بنجاح في الهاكاثون. نتطلع إلى رؤية مشروعك الرائع!",
+                    registerAnotherBtn: "تسجيل فريق آخر",
+                    member: {
+                        nameLabel: "الاسم",
+                        emailLabel: "البريد الإلكتروني",
+                        statusLabel: "الحالة",
+                        academicBackgroundLabel: "الخلفية الأكاديمية",
+                        skillsLabel: "المهارات",
+                        mediaConsentLabel: "ليس لدي أي اعتراض على التغطية الإعلامية خلال مراحل المسابقة.",
+                        namePlaceholder: (index) => `اسم العضو #${index + 2}`,
+                        academicBackgroundPlaceholder: (index) => `على سبيل المثال، علوم الحاسوب`,
+                    },
+                    errors: {
+                        teamName: "اسم الفريق مطلوب.",
+                        contestTheme: "يجب اختيار موضوع للمسابقة.",
+                        ideaSummary: "ملخص الفكرة مطلوب.",
+                        proposalPdf: "ملف مقترح المشروع بصيغة PDF مطلوب.",
+                        leaderName: "اسم القائد مطلوب.",
+                        leaderEmail: "البريد الإلكتروني مطلوب.",
+                        invalidEmail: "الرجاء إدخال عنوان بريد إلكتروني صالح.",
+                        leaderPhone: "رقم الهاتف مطلوب.",
+                        leaderStatus: "الحالة مطلوبة.",
+                        leaderAcademicBackground: "الخلفية الأكاديمية مطلوبة.",
+                        leaderSkills: "مطلوب مهارة واحدة على الأقل.",
+                        leaderMediaConsent: "يجب الموافقة على التغطية الإعلامية.",
+                        teamSize: (total) => `يجب أن يتكون الفريق من 4 أعضاء بالضبط. الأعضاء الحاليون: ${total}.`,
+                        memberName: (index) => `اسم العضو #${index + 2} مطلوب.`,
+                        memberEmail: (index) => `البريد الإلكتروني للعضو #${index + 2} مطلوب.`,
+                        memberInvalidEmail: (index) => `الرجاء إدخال عنوان بريد إلكتروني صالح للعضو #${index + 2}.`,
+                        memberStatus: (index) => `حالة العضو #${index + 2} مطلوبة.`,
+                        memberAcademicBackground: (index) => `الخلفية الأكاديمية للعضو #${index + 2} مطلوبة.`,
+                        memberSkills: (index) => `مطلوب مهارة واحدة على الأقل للعضو #${index + 2}.`,
+                        memberMediaConsent: (index) => `يجب على العضو #${index + 2} الموافقة على التغطية الإعلامية.`,
+                    }
+                }
+            };
+
+            // --- Predefined Skills List ---
+            const skillsOptions = ['Generative AI', 'Python', 'UI/UX', 'Presentation Skills', 'Communication Skills', 'Cyber Security', 'Web Development', 'Mobile Development', 'LLMs'];
+
+            // --- State Variables ---
+            let currentStep = 1;
+            const totalSteps = 3; // Total number of form steps, excluding the summary
+            let currentLang = 'en';
+            let formData = {
+                teamInfo: {
+                    teamName: '',
+                    contestTheme: '',
+                    ideaSummary: '',
+                    proposalPdf: null,
+                },
+                leaderInfo: {
+                    leaderName: '',
+                    leaderEmail: '',
+                    leaderPhone: '',
+                    leaderStatus: '',
+                    leaderAcademicBackground: '',
+                    leaderSkills: [],
+                    leaderMediaConsent: false,
+                },
+                membersInfo: [],
+            };
+
+            // --- Utility Functions ---
+
+            // A utility function to get the CSRF token from the cookie
+            const getCookie = (name) => {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.startsWith(name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            };
+
+            /**
+             * Updates all text content on the page based on the selected language.
+             * @param {string} lang - The language code ('en' or 'ar').
+             */
+            const updateLanguage = (lang) => {
+                const translation = translations[lang];
+                document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translation[key]) {
+                        el.textContent = translation[key];
+                    }
+                });
+
+                // Update static placeholders directly
+                document.getElementById('teamName').placeholder = translation.teamNamePlaceholder;
+                document.getElementById('ideaSummary').placeholder = translation.ideaSummaryPlaceholder;
+                document.getElementById('leaderName').placeholder = translation.leaderNamePlaceholder;
+                document.getElementById('leaderEmail').placeholder = translation.leaderEmailPlaceholder;
+                document.getElementById('leaderPhone').placeholder = translation.leaderPhonePlaceholder;
+                document.getElementById('leaderAcademicBackground').placeholder = translation.academicBackgroundPlaceholder;
+
+                // Update select options
+                document.getElementById('contestTheme').querySelector('option[value=""]').textContent = translation.selectThemeOption;
+                document.getElementById('contestTheme').querySelector('option[value="cyber_security"]').textContent = translation.themeCyberSecurity;
+                document.getElementById('contestTheme').querySelector('option[value="customer_service"]').textContent = translation.themeCustomerService;
+                document.getElementById('contestTheme').querySelector('option[value="education_and_learning"]').textContent = translation.themeEducation;
+                document.getElementById('contestTheme').querySelector('option[value="others"]').textContent = translation.themeOthers;
+
+                const leaderStatusOptions = document.getElementById('leaderStatus').options;
+                leaderStatusOptions[0].textContent = translation.selectStatusOption;
+                leaderStatusOptions[1].textContent = translation.statusUniversity;
+                leaderStatusOptions[2].textContent = translation.statusJobSeeker;
+                leaderStatusOptions[3].textContent = translation.statusMod;
+                leaderStatusOptions[4].textContent = translation.statusOthers;
+
+                // Update dynamic content
+                updateUI();
+            };
+
+            /**
+             * Clears all existing validation errors from the UI.
+             */
+            const clearErrors = () => {
+                document.querySelectorAll('.input-error').forEach(el => {
+                    el.classList.remove('input-error');
+                    el.style.borderColor = null;
+                });
+                document.querySelectorAll('[id^="error-"]').forEach(el => {
+                    el.textContent = '';
+                });
+            };
+
+            /**
+             * Displays validation errors on the UI.
+             * @param {Object} errors - An object where keys are field IDs and values are error messages.
+             */
+            const displayErrors = (errors) => {
+                clearErrors();
+                for (const fieldId in errors) {
+                    const inputElement = document.getElementById(fieldId);
+                    const errorElement = document.getElementById(`error-${fieldId}`);
+                    if (inputElement) {
+                        inputElement.classList.add('input-error');
+                        inputElement.style.borderColor = '#ef4444';
+                    }
+                    if (errorElement) {
+                        errorElement.textContent = errors[fieldId];
+                    }
+                }
+            };
+
+            /**
+             * Validates the current step and returns an object of errors.
+             * @param {number} step - The current step number to validate.
+             * @returns {Object} An object containing validation errors.
+             */
+            const validateStep = (step) => {
+                const errors = {};
+                const t = translations[currentLang];
+                switch (step) {
+                    case 1: // Team & Project Info
+                        if (!formData.teamInfo.teamName.trim()) {
+                            errors.teamName = t.errors.teamName;
+                        }
+                        if (!formData.teamInfo.contestTheme) {
+                            errors.contestTheme = t.errors.contestTheme;
+                        }
+                        if (!formData.teamInfo.ideaSummary.trim()) {
+                            errors.ideaSummary = t.errors.ideaSummary;
+                        }
+                        if (!formData.teamInfo.proposalPdf) {
+                            errors.proposalPdf = t.errors.proposalPdf;
+                        }
+                        break;
+                    case 2: // Leader Info
+                        if (!formData.leaderInfo.leaderName.trim()) {
+                            errors.leaderName = t.errors.leaderName;
+                        }
+                        if (!formData.leaderInfo.leaderEmail.trim()) {
+                            errors.leaderEmail = t.errors.leaderEmail;
+                        } else if (!/\S+@\S+\.\S+/.test(formData.leaderInfo.leaderEmail)) {
+                            errors.leaderEmail = t.errors.invalidEmail;
+                        }
+                        if (!formData.leaderInfo.leaderPhone.trim()) {
+                            errors.leaderPhone = t.errors.leaderPhone;
+                        }
+                        if (!formData.leaderInfo.leaderStatus) {
+                            errors.leaderStatus = t.errors.leaderStatus;
+                        }
+                        if (!formData.leaderInfo.leaderAcademicBackground.trim()) {
+                            errors.leaderAcademicBackground = t.errors.leaderAcademicBackground;
+                        }
+                        if (formData.leaderInfo.leaderSkills.length === 0) {
+                            errors.leaderSkills = t.errors.leaderSkills;
+                        }
+                        if (!formData.leaderInfo.leaderMediaConsent) {
+                            errors.leaderMediaConsent = t.errors.leaderMediaConsent;
+                        }
+                        break;
+                    case 3: // Team Members Info - fixed at 3 members
+                        const totalMembers = formData.membersInfo.length + 1; // +1 for the leader
+                        if (totalMembers !== 4) {
+                            errors.membersInfo = t.errors.teamSize(totalMembers);
+                        }
+                        formData.membersInfo.forEach((member, index) => {
+                            if (!member.memberName.trim()) {
+                                errors[`memberName-${index}`] = t.errors.memberName(index);
+                            }
+                            if (!member.memberEmail.trim()) {
+                                errors[`memberEmail-${index}`] = t.errors.memberEmail(index);
+                            } else if (!/\S+@\S+\.\S+/.test(member.memberEmail)) {
+                                errors[`memberEmail-${index}`] = t.errors.memberInvalidEmail(index);
+                            }
+                            if (!member.memberStatus) {
+                                errors[`memberStatus-${index}`] = t.errors.memberStatus(index);
+                            }
+                            if (!member.memberAcademicBackground.trim()) {
+                                errors[`memberAcademicBackground-${index}`] = t.errors.memberAcademicBackground(index);
+                            }
+                            if (member.memberSkills.length === 0) {
+                                errors[`memberSkills-${index}`] = t.errors.memberSkills(index);
+                            }
+                            if (!member.memberMediaConsent) {
+                                errors[`memberMediaConsent-${index}`] = t.errors.memberMediaConsent(index);
+                            }
+                        });
+                        break;
+                }
+                return errors;
+            };
+
+            /**
+             * Updates the UI based on the current step, including progress bar and buttons.
+             */
+            const updateUI = () => {
+                clearErrors();
+                stepContents.forEach(step => step.classList.remove('active'));
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+
+                const t = translations[currentLang];
+                // Update progress indicator based on the total number of form steps
+                if (currentStep <= totalSteps) {
+                    const progressPercentage = (currentStep / totalSteps) * 100;
+                    progressBar.style.width = `${progressPercentage}%`;
+                    stepInfo.textContent = `Step ${currentStep} of ${totalSteps}`;
+                    progressIndicatorContainer.style.opacity = '1';
+                    progressIndicatorContainer.style.display = 'block';
+                } else {
+                    progressIndicatorContainer.style.opacity = '0';
+                    progressIndicatorContainer.style.display = 'none';
+                }
+
+                let stepName;
+                switch (currentStep) {
+                    case 1: stepName = t.step1Title; break;
+                    case 2: stepName = t.step2Title; break;
+                    case 3: stepName = t.step3Title; break;
+                    case 4: stepName = t.summaryTitle; break;
+                    default: stepName = '';
+                }
+                stepTitle.textContent = stepName;
+
+                document.getElementById('prev-btn').querySelector('span').textContent = t.prevBtn;
+                document.getElementById('next-btn').querySelector('span').textContent = t.nextBtn;
+                document.getElementById('submit-btn').querySelector('span').textContent = t.submitBtn;
+
+                // Handle button visibility based on step
+                prevBtn.style.display = currentStep > 1 ? 'inline-flex' : 'none';
+                nextBtn.style.display = currentStep < 4 ? 'inline-flex' : 'none';
+                submitBtn.style.display = currentStep === 4 ? 'inline-flex' : 'none';
+
+                // Specific rendering for certain steps
+                if (currentStep === 2) {
+                    renderLeaderSkills();
+                } else if (currentStep === 3) {
+                    document.getElementById('leader-display-text').textContent =
+                        `${formData.leaderInfo.leaderName} (${formData.leaderInfo.leaderEmail})`;
+                    renderMembers();
+                } else if (currentStep === 4) {
+                    renderSummary();
+                }
+            };
+
+            /**
+             * Renders the checkboxes for leader skills from the predefined list.
+             */
+            const renderLeaderSkills = () => {
+                const t = translations[currentLang];
+                leaderSkillsCheckboxesContainer.innerHTML = '';
+                skillsOptions.forEach(skill => {
+                    const isChecked = formData.leaderInfo.leaderSkills.includes(skill);
+                    const checkboxDiv = document.createElement('div');
+                    checkboxDiv.className = 'relative flex items-start';
+                    checkboxDiv.innerHTML = `
+                        <div class="flex items-center h-5">
+                            <input
+                                id="leaderSkills-${skill.replace(/\s/g, '-')}"
+                                name="leaderSkills"
+                                value="${skill}"
+                                type="checkbox"
+                                ${isChecked ? 'checked' : ''}
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="leaderSkills-${skill.replace(/\s/g, '-')}" class="font-medium text-gray-700">${skill}</label>
+                        </div>
+                    `;
+                    leaderSkillsCheckboxesContainer.appendChild(checkboxDiv);
+                });
+            };
+
+            /**
+             * Creates and appends a new member form field to the DOM.
+             * @param {number} index - The index of the member in the formData array.
+             * @param {Object} memberData - The data for the member to pre-populate the form.
+             */
+            const createMemberField = (index, memberData = { memberName: '', memberEmail: '', memberStatus: '', memberAcademicBackground: '', memberSkills: [], memberMediaConsent: false }) => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'p-4 border rounded-lg shadow-sm';
+                memberDiv.dataset.index = index;
+
+                const t = translations[currentLang];
+                const skillsCheckboxesHtml = skillsOptions.map(skill => `
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            <input
+                                id="memberSkills-${index}-${skill.replace(/\s/g, '-')}"
+                                name="memberSkills-${index}"
+                                value="${skill}"
+                                type="checkbox"
+                                ${memberData.memberSkills.includes(skill) ? 'checked' : ''}
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="memberSkills-${index}-${skill.replace(/\s/g, '-')}" class="font-medium text-gray-700">${skill}</label>
+                        </div>
+                    </div>
+                `).join('');
+
+                const memberNumber = index + 2;
+                const memberNamePlaceholder = currentLang === 'en' ? translations.en.member.namePlaceholder(index) : translations.ar.member.namePlaceholder(index);
+                const memberAcademicBackgroundPlaceholder = currentLang === 'en' ? translations.en.member.academicBackgroundPlaceholder(index) : translations.ar.member.academicBackgroundPlaceholder(index);
+
+                const statusOptionsHtml = `
+                    <option value="" ${memberData.memberStatus === '' ? 'selected' : ''}>${t.selectStatusOption}</option>
+                    <option value="university_student" ${memberData.memberStatus === 'university_student' ? 'selected' : ''}>${t.statusUniversity}</option>
+                    <option value="job_seeker" ${memberData.memberStatus === 'job_seeker' ? 'selected' : ''}>${t.statusJobSeeker}</option>
+                    <option value="ministry_of_defense_employee" ${memberData.memberStatus === 'ministry_of_defense_employee' ? 'selected' : ''}>${t.statusMod}</option>
+                    <option value="others" ${memberData.memberStatus === 'others' ? 'selected' : ''}>${t.statusOthers}</option>
+                `;
+
+                memberDiv.innerHTML = `
+                    <h4 class="font-semibold text-gray-700 mb-4">${t.member.nameLabel} #${memberNumber}</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="memberName-${index}" class="block text-sm font-medium text-gray-700">${t.member.nameLabel}</label>
+                            <input
+                                type="text"
+                                name="memberName"
+                                id="memberName-${index}"
+                                value="${memberData.memberName}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm sm:text-sm p-3 border"
+                                placeholder="${memberNamePlaceholder}"
+                            />
+                            <p id="error-memberName-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <label for="memberEmail-${index}" class="block text-sm font-medium text-gray-700">${t.member.emailLabel}</label>
+                            <input
+                                type="email"
+                                name="memberEmail"
+                                id="memberEmail-${index}"
+                                value="${memberData.memberEmail}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm sm:text-sm p-3 border"
+                                placeholder="${t.leaderEmailPlaceholder}"
+                            />
+                            <p id="error-memberEmail-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <label for="memberStatus-${index}" class="block text-sm font-medium text-gray-700">${t.member.statusLabel}</label>
+                            <select
+                                name="memberStatus"
+                                id="memberStatus-${index}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm sm:text-sm p-3 border"
+                            >
+                                ${statusOptionsHtml}
+                            </select>
+                            <p id="error-memberStatus-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <label for="memberAcademicBackground-${index}" class="block text-sm font-medium text-gray-700">${t.member.academicBackgroundLabel}</label>
+                            <input
+                                type="text"
+                                name="memberAcademicBackground"
+                                id="memberAcademicBackground-${index}"
+                                value="${memberData.memberAcademicBackground}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm sm:text-sm p-3 border"
+                                placeholder="${memberAcademicBackgroundPlaceholder}"
+                            />
+                            <p id="error-memberAcademicBackground-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">${t.member.skillsLabel}</label>
+                            <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+                                ${skillsCheckboxesHtml}
+                            </div>
+                            <p id="error-memberSkills-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div class="relative flex items-start">
+                            <div class="flex items-center h-5">
+                                <input
+                                    id="memberMediaConsent-${index}"
+                                    name="memberMediaConsent"
+                                    type="checkbox"
+                                    ${memberData.memberMediaConsent ? 'checked' : ''}
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="memberMediaConsent-${index}" class="font-medium text-gray-700">${t.member.mediaConsentLabel}</label>
+                            </div>
+                            <p id="error-memberMediaConsent-${index}" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                    </div>
+                `;
+                membersList.appendChild(memberDiv);
+            };
+
+            /**
+             * Renders all member fields from the formData.
+             */
+            const renderMembers = () => {
+                membersList.innerHTML = ''; // Clear existing fields
+                // We always render exactly 3 members now.
+                for(let i = 0; i < 3; i++) {
+                    createMemberField(i, formData.membersInfo[i] || {});
+                }
+            };
+
+            /**
+             * Populates the final summary step with a review of all entered data.
+             */
+            const renderSummary = () => {
+                const summaryContent = document.getElementById('summary-content');
+                const t = translations[currentLang];
+
+                // Helper to get translated status or default to the value
+                const getStatusTranslation = (status) => t[`status${status.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`] || status;
+
+                // Helper to get translated theme or default to the value
+                const getThemeTranslation = (theme) => t[`theme${theme.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`] || theme;
+
+                summaryContent.innerHTML = `
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-gray-800">${t.step1Title}</h4>
+                        <p class="text-sm text-gray-600 mt-2"><span class="font-medium">${t.teamNameLabel}:</span> ${formData.teamInfo.teamName}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.contestThemeLabel}:</span> ${getThemeTranslation(formData.teamInfo.contestTheme)}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.ideaSummaryLabel}:</span> ${formData.teamInfo.ideaSummary}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.proposalPdfLabel}:</span> ${formData.teamInfo.proposalPdf ? formData.teamInfo.proposalPdf.name : 'Not provided'}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-gray-800">${t.step2Title}</h4>
+                        <p class="text-sm text-gray-600 mt-2"><span class="font-medium">${t.leaderNameLabel}:</span> ${formData.leaderInfo.leaderName}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.leaderEmailLabel}:</span> ${formData.leaderInfo.leaderEmail}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.leaderPhoneLabel}:</span> ${formData.leaderInfo.leaderPhone}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.statusLabel}:</span> ${getStatusTranslation(formData.leaderInfo.leaderStatus)}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.academicBackgroundLabel}:</span> ${formData.leaderInfo.leaderAcademicBackground}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.skillsLabel}:</span> ${formData.leaderInfo.leaderSkills.join(', ')}</p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">${t.mediaConsentLabel}:</span> ${formData.leaderInfo.leaderMediaConsent ? 'Yes' : 'No'}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
+                        <h4 class="text-lg font-semibold text-gray-800">${t.step3Title} (${formData.membersInfo.length + 1} total)</h4>
+                        ${formData.membersInfo.map((member, index) => `
+                            <div class="pl-4 border-l-2 border-gray-300 ml-2 mt-4">
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.nameLabel} #${index + 2}:</span> ${member.memberName}</p>
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.emailLabel}:</span> ${member.memberEmail}</p>
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.statusLabel}:</span> ${getStatusTranslation(member.memberStatus)}</p>
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.academicBackgroundLabel}:</span> ${member.memberAcademicBackground}</p>
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.skillsLabel}:</span> ${member.memberSkills.join(', ')}</p>
+                                <p class="text-sm text-gray-600"><span class="font-medium">${t.member.mediaConsentLabel}:</span> ${member.memberMediaConsent ? 'Yes' : 'No'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            };
+
+            // --- Event Handlers & Core Logic ---
+
+            /**
+             * Populates the formData from the form inputs for the current step.
+             */
+            const populateFormDataFromUI = () => {
+                if (currentStep === 1) {
+                    formData.teamInfo.teamName = document.getElementById('teamName').value;
+                    formData.teamInfo.contestTheme = document.getElementById('contestTheme').value;
+                    formData.teamInfo.ideaSummary = document.getElementById('ideaSummary').value;
+                    formData.teamInfo.proposalPdf = document.getElementById('proposalPdf').files[0] || null;
+                } else if (currentStep === 2) {
+                    formData.leaderInfo.leaderName = document.getElementById('leaderName').value;
+                    formData.leaderInfo.leaderEmail = document.getElementById('leaderEmail').value;
+                    formData.leaderInfo.leaderPhone = document.getElementById('leaderPhone').value;
+                    formData.leaderInfo.leaderStatus = document.getElementById('leaderStatus').value;
+                    formData.leaderInfo.leaderAcademicBackground = document.getElementById('leaderAcademicBackground').value;
+                    formData.leaderInfo.leaderSkills = Array.from(document.querySelectorAll('#leader-skills-checkboxes input[type="checkbox"]:checked')).map(cb => cb.value);
+                    formData.leaderInfo.leaderMediaConsent = leaderMediaConsentCheckbox.checked;
+                } else if (currentStep === 3) {
+                    formData.membersInfo = [];
+                    for(let i = 0; i < 3; i++) {
+                        const member = {
+                            memberName: document.getElementById(`memberName-${i}`).value,
+                            memberEmail: document.getElementById(`memberEmail-${i}`).value,
+                            memberStatus: document.getElementById(`memberStatus-${i}`).value,
+                            memberAcademicBackground: document.getElementById(`memberAcademicBackground-${i}`).value,
+                            memberSkills: Array.from(document.querySelectorAll(`[id^="memberSkills-${i}-"]:checked`)).map(cb => cb.value),
+                            memberMediaConsent: document.getElementById(`memberMediaConsent-${i}`).checked
+                        };
+                        formData.membersInfo.push(member);
+                    }
+                }
+            };
+
+            /**
+             * Handles moving to the next step after validation.
+             */
+            const nextStep = () => {
+                populateFormDataFromUI();
+                const errors = validateStep(currentStep);
+                if (Object.keys(errors).length === 0) {
+                    currentStep++;
+                    updateUI();
+                } else {
+                    displayErrors(errors);
+                }
+            };
+
+            /**
+             * Handles moving to the previous step.
+             */
+            const prevStep = () => {
+                populateFormDataFromUI();
+                currentStep--;
+                updateUI();
+            };
+
+            /**
+             * Handles the final form submission with file uploads.
+             */
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                populateFormDataFromUI();
+
+                const errors = validateStep(currentStep);
+                if (Object.keys(errors).length > 0) {
+                    displayErrors(errors);
+                    return;
+                }
+
+                const csrftoken = getCookie('csrftoken');
+                const formDataToSend = new FormData();
+                
+                // Append text fields from formData
+                formDataToSend.append('teamName', formData.teamInfo.teamName);
+                formDataToSend.append('contestTheme', formData.teamInfo.contestTheme);
+                formDataToSend.append('ideaSummary', formData.teamInfo.ideaSummary);
+
+                // Append the uploaded file if it exists
+                if (formData.teamInfo.proposalPdf) {
+                    formDataToSend.append('proposal_file', formData.teamInfo.proposalPdf);
+                }
+
+                // Append the JSON data as a single string
+                const jsonData = {
+                    leaderInfo: formData.leaderInfo,
+                    membersInfo: formData.membersInfo,
+                };
+                formDataToSend.append('form_data', JSON.stringify(jsonData));
+
+                try {
+                    const response = await fetch('/api/submit_registration/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken, // Include the CSRF token
+                        },
+                        body: formDataToSend // Send the FormData object
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        console.log('Submission successful:', result);
+                        formContainer.classList.add('hidden');
+                        successMessage.classList.add('flex');
+                    } else {
+                        console.error('Submission failed:', result);
+                        alert('Submission failed: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Network error or an issue with the fetch operation:', error);
+                    alert('An error occurred during submission. Please try again.');
+                }
+            };
+
+
+            /**
+             * Resets the form to its initial state.
+             */
+            const resetForm = () => {
+                currentStep = 1;
+                formData = {
+                    teamInfo: { teamName: '', contestTheme: '', ideaSummary: '', proposalPdf: null },
+                    leaderInfo: { leaderName: '', leaderEmail: '', leaderPhone: '', leaderStatus: '', leaderAcademicBackground: '', leaderSkills: [], leaderMediaConsent: false },
+                    membersInfo: [],
+                };
+                registrationForm.reset();
+                formContainer.classList.remove('hidden');
+                successMessage.classList.remove('flex');
+
+                // Add initial members for a team of 4 (3 members + leader)
+                for (let i = 0; i < 3; i++) {
+                    formData.membersInfo.push({ memberName: '', memberEmail: '', memberStatus: '', memberAcademicBackground: '', memberSkills: [], memberMediaConsent: false });
+                }
+                updateUI();
+            };
+
+            // --- Initial Setup & Event Listeners ---
+
+            // Add event listeners for navigation buttons
+            nextBtn.addEventListener('click', nextStep);
+            prevBtn.addEventListener('click', prevStep);
+            registrationForm.addEventListener('submit', handleSubmit);
+            registerAnotherBtn.addEventListener('click', resetForm);
+            languageSwitcher.addEventListener('change', (e) => {
+                currentLang = e.target.value;
+                updateLanguage(currentLang);
+            });
+
+            // Add input event listeners for all form fields
+            registrationForm.addEventListener('input', (e) => {
+                const { id, value, type, checked } = e.target;
+
+                // Handle member fields using a specific pattern
+                if (id.startsWith('memberName-') || id.startsWith('memberEmail-') || id.startsWith('memberStatus-') || id.startsWith('memberAcademicBackground-')) {
+                    const parts = id.split('-');
+                    const index = parseInt(parts[1], 10);
+                    const fieldName = parts[0].replace('member', '');
+                    formData.membersInfo[index][`member${fieldName}`] = value;
+                } else if (id.startsWith('memberSkills-')) {
+                    const parts = id.split('-');
+                    const index = parseInt(parts[1], 10);
+                    const skill = value;
+                    if (checked) {
+                        formData.membersInfo[index].memberSkills.push(skill);
+                    } else {
+                        formData.membersInfo[index].memberSkills = formData.membersInfo[index].memberSkills.filter(s => s !== skill);
+                    }
+                } else if (id.startsWith('memberMediaConsent-')) {
+                    const parts = id.split('-');
+                    const index = parseInt(parts[1], 10);
+                    formData.membersInfo[index].memberMediaConsent = checked;
+                } else if (id.startsWith('leaderSkills-')) {
+                    const skill = value;
+                    if (checked) {
+                        formData.leaderInfo.leaderSkills.push(skill);
+                    } else {
+                        formData.leaderInfo.leaderSkills = formData.leaderInfo.leaderSkills.filter(s => s !== skill);
+                    }
+                } else if (id === 'leaderMediaConsent') {
+                    formData.leaderInfo.leaderMediaConsent = checked;
+                } else {
+                    // Handle other static fields
+                    const fieldMap = {
+                        'teamName': 'teamInfo',
+                        'contestTheme': 'teamInfo',
+                        'ideaSummary': 'teamInfo',
+                        'leaderName': 'leaderInfo',
+                        'leaderEmail': 'leaderInfo',
+                        'leaderPhone': 'leaderInfo',
+                        'leaderStatus': 'leaderInfo',
+                        'leaderAcademicBackground': 'leaderInfo',
+                    };
+                    const section = fieldMap[id];
+                    if (section) {
+                        formData[section][id] = value;
+                    }
+                }
+            });
+
+            // Handle file input separately
+            document.getElementById('proposalPdf').addEventListener('change', (e) => {
+                formData.teamInfo.proposalPdf = e.target.files[0] || null;
+            });
+
+            // Add initial members for a team of 4 (3 members + leader)
+            for (let i = 0; i < 3; i++) {
+                formData.membersInfo.push({ memberName: '', memberEmail: '', memberStatus: '', memberAcademicBackground: '', memberSkills: [], memberMediaConsent: false });
+            }
+
+            // Initial UI update and language setting
+            updateUI();
+            updateLanguage(currentLang);
+        });
+    </script>
+</body>
+</html>
